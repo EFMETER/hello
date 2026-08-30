@@ -337,7 +337,9 @@ svg {
 }
 
 .next {
-  background: #d5ce88;
+  background:
+    radial-gradient(90% 60% at 80% 0%, rgba(255, 250, 210, 0.45), transparent 55%),
+    linear-gradient(180deg, #8f8b5a 0%, #cfc77f 38%, #d5ce88 100%);
   color: var(--ink);
   min-height: 70svh;
   display: flex;
