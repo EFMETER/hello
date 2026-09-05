@@ -25,13 +25,15 @@ flowchart LR
 | IMU | **QMI8658** 三轴加速 + 三轴陀螺 | I2C `0x6A` 或 `0x6B` | WhoAmI 期望 `0x05` |
 | 存储 | W25Q128 16 MB + MicroSD | QSPI Flash / SPI·SDIO | Flash 走芯片专用 QSPI，和屏幕 QSPI 不是同一组脚 |
 | 电源 | Type-C + MX1.25 单节锂电 | ETA6098 | 可边充边用，红灯充电、绿灯电源 |
-| 扩展 | 17 个 GPIO | UART / I2C / ADC / PWM / PIO | 部分脚已被板载外设占用 |
+| 扩展 | 双排 11 针，共 17 个 GPIO | UART / I2C / ADC / PWM / PIO | GP6/7、GP4、GP21/22 和板载外设重叠 |
 
 产品页写了 RTC。对照原理图时没看到独立 RTC 芯片，先当宣传复用，实机再确认。
 
 ## 引脚（官方例程）
 
-数字来自微雪 `RP2350-Touch-AMOLED-1.64.zip` 里的 `DEV_Config.h`、`qspi_pio.h`、FatFs `hw_config.c` 和 `Python/01-SD/boot.py`。可直接用 [`board/pins.py`](board/pins.py) / [`board/pins.h`](board/pins.h)。
+数字来自官方丝印图和微雪例程包（`DEV_Config.h`、`qspi_pio.h`、FatFs `hw_config.c`、`Python/01-SD/boot.py`）。完整排针表在 [`docs/pinout.md`](docs/pinout.md)，常量在 [`board/pins.py`](board/pins.py) / [`board/pins.h`](board/pins.h)。
+
+![官方排针](docs/pinout.png)
 
 ### 屏幕 QSPI（PIO 模拟，不是硬件 QSPI）
 
@@ -68,7 +70,7 @@ SPI 模式（MicroPython 例程）：
 | MISO | 20 |
 | CS | 23 |
 
-SDIO 模式（C FatFs 例程）在同一组脚上扩成 4-bit：CLK=18，CMD=19，D0–D3=20–23。用 SD 时不要把 GP18–23 再当普通 IO。
+SDIO 模式（C FatFs 例程）在同一组脚上扩成 4-bit：CLK=18，CMD=19，D0–D3=20–23。其中 **GP21 / GP22 也在排针上**，只有走四线 SD 时才被占住；SPI 挂卡时这两脚还能用。
 
 ### 电池
 
@@ -88,6 +90,7 @@ SDIO 模式（C FatFs 例程）在同一组脚上扩成 4-bit：CLK=18，CMD=19�
 - 用官方 LVGL 当壳，把 IMU 和电池电压做成一块口袋仪表。
 - MicroPython 先把 SD + 触摸跑通，UI 再迁 C。
 - 试 RP2350 的 RISC-V 核：Pico SDK 选 Hazard3 工具链即可，外设脚位不变。
-- 扩展脚注意避开上表占用的 GPIO，尤其是 QSPI 的 GP9–15。
+- 杜邦线优先用 `HEADER_SAFE_GPIO`：`0 1 2 3 5 16 17 21 22 24 25 27 28 29`。别动 GP6/7（I2C）和 GP4（触摸 INT）。
+- 扩展脚注意避开 QSPI 的 GP9–15。
 
 资料链接集中在 [`docs/resources.md`](docs/resources.md)。

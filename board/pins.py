@@ -1,7 +1,8 @@
 """RP2350-Touch-AMOLED-1.64 pin map.
 
-Numbers come from Waveshare's official demo package
-(RP2350-Touch-AMOLED-1.64.zip, DEV_Config.h / qspi_pio.h / SD boot.py).
+Onboard numbers come from Waveshare's official demo package
+(RP2350-Touch-AMOLED-1.64.zip). Header order matches the official
+pinout silkscreen (docs/pinout.png).
 """
 
 # Shared I2C1: FT3168 touch + QMI8658 IMU
@@ -46,8 +47,21 @@ SDIO_D2 = 22
 SDIO_D3 = 23
 
 # Battery divider on ADC0. Waveshare LCD demo uses 3.3V * 3 / 4096.
+# GP26 is not brought out; GP27–29 on the header are ADC1–3.
 BAT_ADC = 26
 BAT_ADC_SCALE = 3.0
+
+# Dual 11-pin headers, USB-C at the top, looking at the pin side.
+# Left column top → bottom; right column GPIO then power.
+HEADER_LEFT = (29, 28, 27, 22, 21, 17, 16, 5, 4, 3, 2)
+HEADER_RIGHT_GPIO = (1, 0, 25, 24, 6, 7)
+HEADER_RIGHT_POWER = ("GND", "3V3", "BAT", "GND", "5V")
+HEADER_GPIO = HEADER_LEFT + HEADER_RIGHT_GPIO
+
+# Header GPIOs that are also wired to onboard chips.
+HEADER_SHARED_I2C = frozenset({I2C_SDA, I2C_SCL})  # also FT3168 + QMI8658
+HEADER_SHARED_TOUCH_INT = frozenset({TOUCH_INT})
+HEADER_SHARED_SDIO = frozenset({SDIO_D1, SDIO_D2})  # free if SD is SPI-only
 
 # GPIOs claimed by onboard peripherals. Do not reuse for jumper wires
 # unless you have disconnected that function.
@@ -71,3 +85,12 @@ ONBOARD_GPIO = frozenset(
         BAT_ADC,
     }
 )
+
+# Comfortable jumper set: display + I2C sensors + SPI SD all in use.
+# GP6/7 stay on I2C1 (extra devices OK). GP21/22 OK because SPI SD
+# does not use SDIO D1/D2. GP4 is touch INT — leave it alone.
+HEADER_SAFE_GPIO = frozenset(HEADER_GPIO) - {
+    TOUCH_INT,
+    I2C_SDA,
+    I2C_SCL,
+}

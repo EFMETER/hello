@@ -42,3 +42,24 @@
 
 #define WS164_BAT_ADC 26
 #define WS164_BAT_ADC_SCALE 3.0f
+
+/* Dual 11-pin headers, USB-C at the top, looking at the pin side. */
+#define WS164_HEADER_LEFT_0 29
+#define WS164_HEADER_LEFT_1 28
+#define WS164_HEADER_LEFT_2 27
+#define WS164_HEADER_LEFT_3 22
+#define WS164_HEADER_LEFT_4 21
+#define WS164_HEADER_LEFT_5 17
+#define WS164_HEADER_LEFT_6 16
+#define WS164_HEADER_LEFT_7 5
+#define WS164_HEADER_LEFT_8 4
+#define WS164_HEADER_LEFT_9 3
+#define WS164_HEADER_LEFT_10 2
+
+#define WS164_HEADER_RIGHT_0 1
+#define WS164_HEADER_RIGHT_1 0
+#define WS164_HEADER_RIGHT_2 25
+#define WS164_HEADER_RIGHT_3 24
+#define WS164_HEADER_RIGHT_4 6
+#define WS164_HEADER_RIGHT_5 7
+/* then GND, 3V3, BAT, GND, 5V */

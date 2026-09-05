@@ -27,4 +27,4 @@
 - C SDK：https://files.waveshare.com/wiki/common/Raspberry-pi-pico-2-c-sdk.pdf
 - Python SDK：https://files.waveshare.com/wiki/common/Raspberry-pi-pico-2-python-sdk.pdf
 
-本仓库只收录引脚表和探测脚本，不复制微雪例程源码。点亮屏幕请直接用官方 zip。
+本仓库只收录引脚表和探测脚本，不复制微雪例程源码。点亮屏幕请直接用官方 zip。排针对照见 [`pinout.md`](pinout.md)。
