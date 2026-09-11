@@ -1,6 +1,19 @@
-# 在本地 G 盘搭建 Supabase
+# 在本地 G 盘搭建 Supabase（学位论文答辩演示）
 
-这是一套可直接放到 **Windows `G:\supabase`** 的本地 Supabase 开发栈。它使用官方 [Supabase CLI](https://supabase.com/docs/guides/local-development) + Docker，启动后包含：
+**方案：一台笔记本跑 Docker 本地 Supabase，手机只连这台电脑的移动热点，桌面和手机 Flutter 使用同一个地址。**
+
+```text
+http://192.168.137.1:54321
+```
+
+进场步骤、检查清单和现场禁忌见 **[DEFENSE.md](DEFENSE.md)**。答辩当天在 `G:\supabase` 运行：
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\demo.ps1
+```
+
+不要用校园网、不要用第二台服务器、不要用 `127.0.0.1`（手机上的 localhost 是手机自己）。
 
 | 服务 | 谁用 | 地址 |
 | --- | --- | --- |
@@ -8,8 +21,6 @@
 | Studio（控制台） | 仅电脑浏览器 | http://127.0.0.1:54323 |
 | Postgres | 仅电脑（调试） | `postgresql://postgres:postgres@127.0.0.1:54322/postgres` |
 | Mailpit（本地邮件） | 仅电脑 | http://127.0.0.1:54324 |
-
-Flutter 两端不要用 `127.0.0.1`。Windows 开「移动热点」后，电脑网关一般是 `192.168.137.1`，桌面 App 也连这个地址，这样和手机完全一致。详见 [examples/flutter](examples/flutter/README.md)。
 
 官方建议本机至少预留 **7 GB 内存**，才能较稳地拉起全部服务。
 
@@ -57,9 +68,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\start.ps1
 ```
 
-第一次 `start` 会下载官方镜像，可能需要几分钟。请先打开 Windows「移动热点」，再启动脚本，这样 `.env` 里的 `SUPABASE_URL` 会写成桌面和手机都能用的 `http://192.168.137.1:54321`。
+第一次 `start` 会下载官方镜像，可能需要几分钟。请先打开 Windows「移动热点」，再启动脚本。答辩请用 `.\demo.ps1`（热点未开会失败）。
 
-电脑浏览器打开 http://127.0.0.1:54323 ，在 Table Editor 里应能看到示例表 `notes`。
+电脑浏览器打开 http://127.0.0.1:54323 ，Table Editor 里应能看到 `notes` 的答辩演示种子数据。
 
 启动脚本会把密钥写入项目根目录的 `.env`（已加入 `.gitignore`）。不要提交真实密钥。
 
@@ -67,7 +78,8 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 | 操作 | 命令 |
 | --- | --- |
-| 启动（保留数据） | `.\scripts\windows\start.ps1` |
+| **答辩当天启动** | `.\demo.ps1` |
+| 启动（保留数据，不强制热点） | `.\scripts\windows\start.ps1` |
 | 查看地址和密钥 | `.\scripts\windows\status.ps1` |
 | 停止（默认保留数据） | `.\scripts\windows\stop.ps1` |
 | 清空并重跑迁移 / 种子 | `.\scripts\windows\reset.ps1` |
@@ -86,12 +98,14 @@ npm run reset
 
 ```
 G:\supabase
-├── start.ps1                 # 一键 setup + start
+├── demo.ps1                  # 答辩当天：预检热点并启动
+├── start.ps1                 # 安装依赖 + 启动
+├── DEFENSE.md                # 答辩检查清单
 ├── scripts\windows\          # Windows 管理脚本
 ├── supabase\
 │   ├── config.toml           # 官方 CLI 本地配置（Auth 面向 192.168.137.1）
 │   ├── migrations\           # 数据库迁移
-│   └── seed.sql              # 本地种子数据
+│   └── seed.sql              # 答辩演示种子数据
 ├── examples\flutter\         # 桌面/手机共用 URL 的 Dart 片段
 ├── package.json              # 锁定 supabase CLI 2.117.0
 └── .env.example
@@ -133,4 +147,4 @@ $env:SUPABASE_LAN_HOST="实际IP"
 - **内存不足**：关掉其它占内存的程序，或在 `supabase start` 时用 `-x` 排除不需要的服务（见[官方 CLI](https://supabase.com/docs/reference/cli/supabase-start)）。
 - **Windows 上看不到本地日志**：Analytics 在 Windows 上需要按官方说明暴露 Docker daemon socket（`tcp://localhost:2375`）。不影响 Studio、API、数据库的日常使用。
 - **手机连不上、桌面却正常**：两端必须都用 `http://192.168.137.1:54321`，先打开移动热点；以管理员运行一次 `start.ps1` 以便写入防火墙规则；手机浏览器先测该地址。
-- **这不是生产自托管**：本仓库走的是官方本地开发栈。若要在服务器上自托管，请按 [Self-Hosting with Docker](https://supabase.com/docs/guides/self-hosting/docker) 单独部署，并务必替换默认密钥。上线后桌面和手机再一起改成同一个 `https://xxxx.supabase.co`。
+- **这是答辩演示用的本地开发栈**，不是生产自托管。现场不要依赖校园网或云端项目。

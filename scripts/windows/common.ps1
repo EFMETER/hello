@@ -104,6 +104,38 @@ function Get-UnifiedApiUrl {
     return "http://$(Get-UnifiedLanHost):$script:ApiPort"
 }
 
+function Test-UnifiedApiPort {
+    $hostAddress = Get-UnifiedLanHost
+    try {
+        $result = Test-NetConnection -ComputerName $hostAddress -Port $script:ApiPort -WarningAction SilentlyContinue
+        return [bool]$result.TcpTestSucceeded
+    }
+    catch {
+        return $false
+    }
+}
+
+function Write-DefenseCard {
+    $apiUrl = Get-UnifiedApiUrl
+    $lanHost = Get-UnifiedLanHost
+    $hotspotUp = Test-HostOnThisMachine -HostAddress $lanHost
+
+    Write-Host ""
+    Write-Host "========== 答辩演示 ==========" -ForegroundColor Green
+    Write-Host "共用 URL（桌面 + 手机）: $apiUrl"
+    Write-Host "Studio（仅本机浏览器）:  http://127.0.0.1:54323"
+    Write-Host "手机: 只连本机热点，不要连校园网"
+    Write-Host "演示: 桌面往 notes 写入一条，手机刷新应立刻看到"
+    if ($hotspotUp) {
+        Write-Host "热点网关: $lanHost （已在本机网卡上）"
+    }
+    else {
+        Write-Host "热点网关: $lanHost （尚未检测到，请打开移动热点）" -ForegroundColor Yellow
+    }
+    Write-Host "密钥: 项目根目录 .env 里的 SUPABASE_ANON_KEY"
+    Write-Host "================================"
+}
+
 function Ensure-SupabaseLanFirewall {
     $ruleName = "Supabase LAN API for Flutter hotspot"
     $ports = @($script:ApiPort)
