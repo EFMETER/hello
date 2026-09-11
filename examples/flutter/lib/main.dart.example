@@ -1,0 +1,21 @@
+import 'package:flutter/widgets.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'local_supabase.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  if (supabaseAnonKey.isEmpty) {
+    throw StateError(
+      'Pass --dart-define=SUPABASE_ANON_KEY=... from the project .env',
+    );
+  }
+
+  await Supabase.initialize(
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
+  );
+
+  runApp(const Placeholder());
+}
