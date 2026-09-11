@@ -64,3 +64,59 @@ function Write-Header {
     Write-Host ""
     Write-Host "==> $Message" -ForegroundColor Cyan
 }
+
+# Windows 移动热点 / ICS 默认网关。桌面 App 和手机 App 都连这个地址，而不是 127.0.0.1。
+$script:DefaultUnifiedHost = "192.168.137.1"
+$script:ApiPort = 54321
+
+function Get-UnifiedLanHost {
+    $fromEnv = [Environment]::GetEnvironmentVariable("SUPABASE_LAN_HOST")
+    if (-not [string]::IsNullOrWhiteSpace($fromEnv)) {
+        return $fromEnv.Trim()
+    }
+
+    $addrs = @(Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.IPAddress -and
+                $_.IPAddress -notlike "127.*" -and
+                $_.IPAddress -notlike "169.254.*"
+            })
+
+    $hotspot = $addrs |
+        Where-Object { $_.IPAddress -eq $script:DefaultUnifiedHost -or $_.IPAddress -like "192.168.137.*" } |
+        Select-Object -First 1
+    if ($hotspot) {
+        return $hotspot.IPAddress
+    }
+
+    return $script:DefaultUnifiedHost
+}
+
+function Test-HostOnThisMachine {
+    param([Parameter(Mandatory = $true)][string]$HostAddress)
+
+    $match = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
+        Where-Object { $_.IPAddress -eq $HostAddress }
+    return [bool]$match
+}
+
+function Get-UnifiedApiUrl {
+    return "http://$(Get-UnifiedLanHost):$script:ApiPort"
+}
+
+function Ensure-SupabaseLanFirewall {
+    $ruleName = "Supabase LAN API for Flutter hotspot"
+    $ports = @($script:ApiPort)
+
+    try {
+        $existing = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
+        if (-not $existing) {
+            New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Action Allow -Protocol TCP -LocalPort $ports -Profile Any | Out-Null
+            Write-Host "已添加防火墙规则：$ruleName （TCP $ports）"
+        }
+    }
+    catch {
+        Write-Host "未能自动添加防火墙规则（通常需要以管理员运行 PowerShell）。请手动放行 TCP $ports，或用管理员执行：" -ForegroundColor Yellow
+        Write-Host "  New-NetFirewallRule -DisplayName '$ruleName' -Direction Inbound -Action Allow -Protocol TCP -LocalPort $($ports -join ',') -Profile Any"
+    }
+}
